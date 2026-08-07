@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: fromfuture-site
+    runtime: static
+    buildCommand: tar xzf site.tar.gz
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /contact
+        destination: /connect/index.html
