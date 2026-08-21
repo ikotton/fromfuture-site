@@ -56,10 +56,10 @@ def industry_links():
 # tentacles connect each pill to the orb. assets/voice-demo.js speaks the
 # ElevenLabs conversation WebSocket protocol directly with these agent ids.
 VOICE_AGENTS = [
-    ("Kotton From Future", "bAzQsMlkaQa8CHH2V7mr"),
-    ("Dental", "agent_4201m0h3h1k0em68795a6p3ek7xm"),
-    ("Chiropractor", "agent_3101m0h2z7zbebjtjx39x7feb8c4"),
-    ("Roofing", "agent_7701m0h40220fwmvcwkp7m2m6a1m"),
+    ("FromFuture", "bAzQsMlkaQa8CHH2V7mr"),
+    ("Demo Dental", "agent_4201m0h3h1k0em68795a6p3ek7xm"),
+    ("Demo Chiropractor", "agent_3101m0h2z7zbebjtjx39x7feb8c4"),
+    ("Demo Roofing", "agent_7701m0h40220fwmvcwkp7m2m6a1m"),
 ]
 
 
@@ -80,7 +80,7 @@ def voice_demo_section():
   <section class="blk vd-blk"><div class="blk-inner">
     <div class="sec-label">Live Voice Demos</div>
     <h2 class="sec-h">Press. Talk. <span class="grad">Believe.</span></h2>
-    <p class="sec-sub" style="margin-left:auto;margin-right:auto">These aren't recordings. Pick an industry, tap the orb, and have a live conversation with the same AI voice agents our clients run 24/7.</p>
+    <p class="sec-sub" style="margin-left:auto;margin-right:auto">These aren't recordings. Pick an industry, tap the orb, and have a live conversation with the same AI voice agents our clients run 24/7. Ask FromFuture to book you an appointment &mdash; it's wired straight into our real calendar.</p>
     <div class="vd-stage" id="vdStage">
       <svg id="vdTentacles" class="vd-tentacles" aria-hidden="true" preserveAspectRatio="none"></svg>
       """ + pills + """
@@ -92,7 +92,7 @@ def voice_demo_section():
             <span class="vd-eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
           </span>
         </button>
-        <div class="vd-status" id="vdStatus">Tap the orb to talk to Kotton From Future</div>
+        <div class="vd-status" id="vdStatus">Tap the orb to talk to FromFuture</div>
         <div class="vd-caption" id="vdCaption"></div>
       </div>
     </div>
