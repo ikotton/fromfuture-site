@@ -400,9 +400,13 @@ nav .logo img{{height:32px;width:auto;display:block}}
    through it — exact logo letterforms, no font license required.
    Real text stays in the h1 for SEO / screen readers. */
 .headline-wm{{width:min(880px,84vw);aspect-ratio:5544/1775;margin:0 auto clamp(22px,3.4vh,40px);position:relative;
-  background-image:linear-gradient(to left,#6366f1,#a855f7,#fcd34d);
+  background-image:linear-gradient(to left,#6366f1,#a855f7,#fcd34d,#a855f7,#6366f1);
+  background-size:200% 100%;
+  animation:wmWave 8s linear infinite;
   -webkit-mask:url('/assets/logo/fromfuture-wordmark-white.png') center/contain no-repeat;
   mask:url('/assets/logo/fromfuture-wordmark-white.png') center/contain no-repeat}}
+@keyframes wmWave{{0%{{background-position:0% 50%}}100%{{background-position:200% 50%}}}}
+@media (prefers-reduced-motion:reduce){{.headline-wm{{animation:none;background-image:linear-gradient(to left,#6366f1,#a855f7,#fcd34d);background-size:100% 100%}}}}
 .sr-only{{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
   clip:rect(0,0,0,0);white-space:nowrap;border:0}}
 @supports not ((-webkit-mask:url('') center/contain no-repeat) or (mask:url('') center/contain no-repeat)){{
