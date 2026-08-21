@@ -1,0 +1,699 @@
+# THEME PREVIEW — /theme-preview
+# From Future's structure and links rendered in the client-supplied spec:
+# deep dark blue-purple (260 87% 3%), Geist Sans body, General Sans display,
+# JS fade-looped background video, blurred overlay shape, liquid-glass, marquee.
+from base import write_page
+
+VIDEO = "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_065045_c44942da-53c6-4804-b734-f9e07fc22e08.mp4"
+
+# marquee entries: real industry pages (structure/links preserved), not template logos
+MARQUEE = [
+    ("Legal Services", "/solutions/voice-ai/legal-services"),
+    ("Real Estate", "/solutions/voice-ai/real-estate"),
+    ("Dental Care", "/solutions/voice-ai/dental-care"),
+    ("Restaurants", "/solutions/voice-ai/restaurants"),
+    ("Roofing", "/solutions/voice-ai/roofing"),
+    ("HVAC", "/solutions/voice-ai/hvac"),
+]
+
+CHEV = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:.7"><path d="m6 9 6 6 6-6"/></svg>'
+
+
+def marquee_items():
+    out = []
+    for name, href in MARQUEE:
+        out.append(f'''<a class="mq-item" href="{href}">
+          <span class="liquid-glass mq-ic">{name[0]}</span>
+          <span class="mq-name">{name}</span></a>''')
+    return "".join(out)
+
+
+SERVICES = [
+    ("Tap-To-Talk AI Agent", "Instant voice interactions on your website. Natural conversations with customers using advanced AI technology.", "/services/tap-to-talk", True),
+    ("Phone AI Assistant", "AI-powered phone calls for appointments, inquiries, and customer support available 24/7.", "/services/phone-ai", False),
+    ("AI Chatbot", "Intelligent chat solutions for instant customer support and engagement.", "/services/chatbot", False),
+    ("PageSpeak", "Transform your written content into engaging audio with AI-powered voice technology. Increase accessibility and engagement.", "/services/page-speak", False),
+    ("AI SEO", "AI-driven SEO optimization to improve your website's visibility and ranking.", "/services/ai-seo", False),
+    ("Process Automation", "Streamline operations with AI-powered automation solutions.", "/services/process-automation", False),
+]
+
+
+def industry_links():
+    import json, os
+    d = "/home/claude/fromfuture-site/content/solutions"
+    out = []
+    for fn in sorted(os.listdir(d)):
+        with open(os.path.join(d, fn)) as f:
+            j = json.load(f)
+        n = (j.get("h1", "").split("|")[0].replace("AI Voice Solutions for", "").strip()
+             or fn[:-5].replace("-", " ").title())
+        out.append(f'<a href="/solutions/voice-ai/{j["slug"]}">{n}</a>')
+    return "".join(out)
+
+
+# Live voice touch-to-talk demos — CUSTOM widget (no ElevenLabs embed).
+# Pills float octopus-style around a central press-to-talk orb; curved SVG
+# tentacles connect each pill to the orb. assets/voice-demo.js speaks the
+# ElevenLabs conversation WebSocket protocol directly with these agent ids.
+VOICE_AGENTS = [
+    ("Kotton From Future", "bAzQsMlkaQa8CHH2V7mr"),
+    ("Dental", "agent_4201m0h3h1k0em68795a6p3ek7xm"),
+    ("Chiropractor", "agent_3101m0h2z7zbebjtjx39x7feb8c4"),
+    ("Roofing", "agent_7701m0h40220fwmvcwkp7m2m6a1m"),
+]
+
+
+def voice_demo_section():
+    pos = [  # (left%, top%) per pill — octopus spread around center orb
+        ("9%", "16%"), ("6%", "66%"), ("74%", "12%"), ("72%", "70%"),
+    ]
+    pills = ""
+    for i, (label, aid) in enumerate(VOICE_AGENTS):
+        l, t = pos[i]
+        pills += ('<button class="vd-pill liquid-glass" data-agent="' + aid +
+                  '" data-label="' + label + '" style="--pl:' + l + ';--pt:' + t +
+                  ';--bd:' + f"{-i * 1.7:.1f}" + 's;--bt:' + f"{5.5 + i * 0.9:.1f}" + 's">' +
+                  '<span class="vd-pill-dot"></span>' + label + '</button>')
+
+    # NOTE: plain string (not an f-string) — literal braces are safe here.
+    return """
+  <section class="blk vd-blk"><div class="blk-inner">
+    <div class="sec-label">Live Voice Demos</div>
+    <h2 class="sec-h">Press. Talk. <span class="grad">Believe.</span></h2>
+    <p class="sec-sub" style="margin-left:auto;margin-right:auto">These aren't recordings. Pick an industry, tap the orb, and have a live conversation with the same AI voice agents our clients run 24/7.</p>
+    <div class="vd-stage" id="vdStage">
+      <svg id="vdTentacles" class="vd-tentacles" aria-hidden="true" preserveAspectRatio="none"></svg>
+      """ + pills + """
+      <div class="vd-core">
+        <button id="vdOrb" class="vd-orb" aria-label="Press to talk">
+          <span class="vd-ring r1"></span><span class="vd-ring r2"></span><span class="vd-ring r3"></span>
+          <span class="vd-orb-face liquid-glass">
+            <svg class="vd-mic" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+            <span class="vd-eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+          </span>
+        </button>
+        <div class="vd-status" id="vdStatus">Tap the orb to talk to Kotton From Future</div>
+        <div class="vd-caption" id="vdCaption"></div>
+      </div>
+    </div>
+  </div></section>
+
+  <style>
+  .vd-blk .sec-label,.vd-blk .sec-h,.vd-blk .sec-sub{text-align:center}
+  .vd-blk .sec-sub{max-width:34rem}
+  .vd-stage{position:relative;height:480px;margin-top:44px}
+  .vd-tentacles{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+  .vd-t{fill:none;stroke:url(#vdGrad);stroke-width:1.6;opacity:.18;transition:opacity .5s}
+  .vd-t-active{opacity:.85;stroke-width:2;stroke-dasharray:7 9;animation:vdFlow 1.4s linear infinite}
+  @keyframes vdFlow{to{stroke-dashoffset:-32}}
+  .vd-dot{fill:#a855f7;opacity:.25;transition:opacity .5s}
+  circle.vd-t-active,.vd-dot.vd-t-active{opacity:.95;fill:#fcd34d}
+  .vd-pill{position:absolute;left:var(--pl);top:var(--pt);display:inline-flex;align-items:center;gap:10px;
+    padding:14px 22px;border-radius:999px;border:0;cursor:pointer;color:hsl(var(--foreground));
+    font-family:inherit;font-size:15px;font-weight:600;letter-spacing:.01em;white-space:nowrap;z-index:3;
+    animation:vdBob var(--bt,6s) ease-in-out var(--bd,0s) infinite;transition:transform .3s,box-shadow .3s}
+  .vd-pill:hover{transform:translateY(-3px) scale(1.04)}
+  .vd-pill-dot{width:8px;height:8px;border-radius:50%;background:#6b7280;box-shadow:0 0 8px rgba(99,102,241,0);transition:all .4s}
+  .vd-pill.vd-active{background:linear-gradient(to left,rgba(99,102,241,.28),rgba(168,85,247,.30),rgba(252,211,77,.16));
+    box-shadow:0 0 0 1px rgba(168,85,247,.45),0 8px 32px rgba(168,85,247,.25)}
+  .vd-pill.vd-active .vd-pill-dot{background:#fcd34d;box-shadow:0 0 12px rgba(252,211,77,.9)}
+  @keyframes vdBob{0%,100%{translate:0 0}33%{translate:0 -9px}66%{translate:0 5px}}
+  .vd-core{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);text-align:center;z-index:4;width:340px;max-width:90%}
+  .vd-orb{position:relative;width:132px;height:132px;border:0;background:none;cursor:pointer;padding:0;color:hsl(var(--foreground))}
+  .vd-orb-face{position:absolute;inset:0;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+    background:radial-gradient(circle at 32% 28%,rgba(168,85,247,.32),rgba(99,102,241,.14) 55%,rgba(13,3,28,.6));
+    transition:transform .25s,box-shadow .4s}
+  .vd-orb:hover .vd-orb-face{transform:scale(1.05)}
+  .vd-ring{position:absolute;inset:0;border-radius:50%;border:1px solid rgba(168,85,247,.4);opacity:0}
+  .vd-live .vd-ring{animation:vdPulse 2.2s ease-out infinite}
+  .vd-live .r2{animation-delay:.55s}.vd-live .r3{animation-delay:1.1s}
+  .vd-connecting .vd-orb-face{animation:vdBreathe 1s ease-in-out infinite}
+  @keyframes vdPulse{0%{transform:scale(1);opacity:.75}100%{transform:scale(1.85);opacity:0}}
+  @keyframes vdBreathe{0%,100%{box-shadow:0 0 0 0 rgba(168,85,247,.35)}50%{box-shadow:0 0 42px 8px rgba(168,85,247,.5)}}
+  .vd-live .vd-orb-face{box-shadow:0 0 48px 6px rgba(168,85,247,.45)}
+  .vd-eq{display:none;align-items:flex-end;gap:3px;height:16px}
+  .vd-eq i{width:3px;height:5px;border-radius:2px;background:linear-gradient(to top,#6366f1,#a855f7,#fcd34d)}
+  .vd-speaking .vd-eq{display:flex}
+  .vd-speaking .vd-mic{display:none}
+  .vd-speaking .vd-eq i{animation:vdEq .7s ease-in-out infinite}
+  .vd-speaking .vd-eq i:nth-child(2){animation-delay:.12s}.vd-speaking .vd-eq i:nth-child(3){animation-delay:.24s}
+  .vd-speaking .vd-eq i:nth-child(4){animation-delay:.36s}.vd-speaking .vd-eq i:nth-child(5){animation-delay:.48s}
+  @keyframes vdEq{0%,100%{height:5px}50%{height:16px}}
+  .vd-status{margin-top:18px;font-size:14.5px;color:hsl(var(--hero-sub));opacity:.8;min-height:22px}
+  .vd-caption{margin-top:8px;font-size:13.5px;line-height:1.55;color:hsl(var(--hero-sub));opacity:.55;min-height:20px;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  @media (max-width:760px){
+    .vd-stage{height:auto;display:flex;flex-direction:column;align-items:center;gap:0}
+    .vd-tentacles{display:none}
+    .vd-core{position:static;transform:none;order:1;margin-bottom:30px}
+    .vd-pill{position:static;animation:none;margin:6px;order:2}
+    .vd-stage{padding-top:8px}
+    .vd-pills-wrap{order:2}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .vd-pill{animation:none}
+    .vd-t-active{animation:none}
+  }
+  </style>
+  <script>window.FF_VOICE_DEMO={stageId:'vdStage'};</script>
+  <script src="/assets/voice-demo.js" defer></script>
+"""
+
+
+def below_sections():
+    ticker = industry_links()
+    svc = ""
+    for i, (t, d, href, pop) in enumerate(SERVICES):
+        badge = '<span class="pop liquid-glass">Most Popular</span>' if pop else ""
+        svc += f"""<a class="svc liquid-glass trace" href="{href}" style="--td:{-i*1.15:.2f}s">{badge}
+          <div class="idx">{i+1:02d}</div><h3>{t}</h3><p>{d}</p>
+          <span class="more">Learn more &rarr;</span></a>"""
+
+    return f"""
+<div class="tp-below">
+{voice_demo_section()}
+  <div class="sec-divider"></div>
+
+  <section class="blk"><div class="blk-inner">
+    <div class="sec-label">Before vs. After</div>
+    <h2 class="sec-h">The <span class="grad">Unfair Advantage</span></h2>
+    <div class="cmp">
+      <div class="cmp-col old liquid-glass trace" style="--td:-3.5s">
+        <div class="cmp-hd">Traditional Business Operations</div>
+        <div class="cmp-cell"><span class="m">&times;</span><div>
+          <b>Missed Calls</b><p>Late-night &amp; weekend calls go to voicemail and die.</p></div></div>
+        <div class="cmp-cell"><span class="m">&times;</span><div>
+          <b>Manual DM &amp; Email Replies</b><p>Leads sit for hours waiting for a human response.</p></div></div>
+        <div class="cmp-cell"><span class="m">&times;</span><div>
+          <b>Staff Overwhelmed</b><p>Front-desk staff wastes time on repetitive intake logic.</p></div></div>
+      </div>
+      <div class="cmp-col new liquid-glass trace">
+        <div class="cmp-hd">The Executive Clone System</div>
+        <div class="cmp-cell"><span class="m">&check;</span><div>
+          <b>24/7 Live Voice</b><p>Your exact voice clone answers instantly, answers questions, and books appointments.</p></div></div>
+        <div class="cmp-cell"><span class="m">&check;</span><div>
+          <b>Instant Multi-Channel Replies</b><p>AI handles DMs, reviews, and emails in your tone with human oversight.</p></div></div>
+        <div class="cmp-cell"><span class="m">&check;</span><div>
+          <b>Automated Intake</b><p>Routine scheduling and qualification happen on autopilot so staff focuses on high-ticket tasks.</p></div></div>
+      </div>
+    </div>
+  </div></section>
+
+  <div class="sec-divider"></div>
+
+  <section class="blk"><div class="blk-inner">
+    <div class="sec-label">What We Build</div>
+    <h2 class="sec-h">Comprehensive <span class="grad">AI Solutions</span></h2>
+    <div class="svc-grid">{svc}</div>
+  </div></section>
+
+  <div class="sec-divider"></div>
+
+  <section class="blk"><div class="blk-inner ind-blk">
+    <div class="sec-label">Industry Solutions</div>
+    <div class="ind-big odo" id="odo46" aria-label="46" role="img"><span class="reel"><span class="strip" data-final="4"></span></span><span class="reel"><span class="strip" data-final="6"></span></span></div>
+    <div class="ind-lbl">Industries Served</div>
+    <div style="margin-top:30px"><a class="btn-hero-secondary liquid-glass" style="padding:14px 28px;font-size:15px" href="/solutions/voice-ai/">Find Yours &rarr;</a></div>
+    <div class="ind-ticker" aria-hidden="true"><div class="tk">{ticker}{ticker}</div></div>
+  </div></section>
+
+  <section class="blk" style="padding-top:0"><div class="blk-inner">
+    <div class="close-panel liquid-glass trace" style="--td:-1.8s">
+      <div class="blur-shape"></div>
+      <div style="position:relative;z-index:2">
+        <div class="sec-label">Your Move</div>
+        <h2 class="sec-h">Ready to <span class="grad">Transform</span> Your Business?</h2>
+        <p class="sec-sub">Thirty minutes with our AI specialists. A strategy built for your business, an ROI model with your numbers in it, and a live demo. No commitment.</p>
+        <div class="close-act">
+          <a class="btn-hero-secondary liquid-glass" style="padding:16px 30px;font-size:15px" href="/connect">Book a Systems Audit</a>
+          <a class="btn-hero-secondary liquid-glass" style="padding:16px 30px;font-size:15px" href="/pricing">See Pricing</a>
+        </div>
+      </div>
+    </div>
+  </div></section>
+
+  <div class="sec-divider"></div>
+
+  <footer class="tp">
+    <div class="ft-grid">
+      <div class="ft-brand">
+        <a href="/"><img src="/assets/logo/fromfuture-lockup-white.png" alt="From Future"></a>
+        <p>From Future revolutionizes local businesses with customized AI voice and automation solutions for 24/7 customer engagement and operational efficiency.</p>
+        <div class="ft-contact"><a href="mailto:support@fromfuture.io">support@fromfuture.io</a><br>Miami, FL, USA</div>
+      </div>
+      <div><h4>Company</h4><ul class="ft-links">
+        <li><a href="/about">About</a></li><li><a href="/connect">Contact</a></li>
+        <li><a href="/blog">Blog</a></li><li><a href="/careers">Careers</a></li></ul></div>
+      <div><h4>Legal</h4><ul class="ft-links">
+        <li><a href="/privacy">Privacy</a></li><li><a href="/terms">Terms</a></li></ul></div>
+      <div><h4>Stay Updated</h4>
+        <p style="font-size:13.5px;color:hsl(var(--foreground) / .5);margin-bottom:14px">Get the latest AI insights and updates delivered to your inbox.</p>
+        <form class="nl" style="flex-direction:column;gap:10px" onsubmit="event.preventDefault();this.querySelector('button').textContent='Thank you!'">
+          <input type="text" placeholder="Your name" aria-label="Name" style="border-radius:9999px;border-right:1px solid hsl(var(--foreground) / .12)">
+          <div style="display:flex;width:100%"><input type="email" required placeholder="Enter your email" aria-label="Email">
+          <button class="liquid-glass" type="submit">Subscribe</button></div></form>
+        <label class="agency"><input type="checkbox"> I represent a digital marketing agency</label>
+      </div>
+    </div>
+    <div class="ft-bottom">
+      <div>&copy; 2026 From Future. All rights reserved.</div>
+      <a href="https://www.linkedin.com/company/from-future-agency" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+  </footer>
+</div>"""
+
+
+def build():
+    below = below_sections()
+    items = marquee_items()
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conversational AI Agents For Local Businesses | From Future | FromFuture.io</title>
+<meta name="description" content="Transform your business with AI voice agents, chat agents, and automation solutions. Never miss a lead again with 24/7 AI-powered customer engagement.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://www.fromfuture.io/">
+<meta property="og:title" content="Conversational AI Agents For Local Businesses | From Future | FromFuture.io">
+<meta property="og:description" content="Transform your business with AI voice agents, chat agents, and automation solutions. Never miss a lead again with 24/7 AI-powered customer engagement.">
+<meta property="og:image" content="https://fromfuture.io/assets/media/og-card.png"><meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" sizes="32x32" href="/assets/icons/favicon-32.png">
+<link rel="icon" sizes="64x64" href="/assets/icons/favicon-64.png">
+<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon-180.png">
+<script async src="https://static.klaviyo.com/onsite/js/klaviyo.js?company_id=TTxeHT"></script>
+<script>!function(f,b,e,v,n,t,s){{if(f.fbq)return;n=f.fbq=function(){{n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)}};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','551103760643973');fbq('track','PageView');</script>
+<script>(function(w,d,s,l,i){{w[l]=w[l]||[];w[l].push({{'gtm.start':new Date().getTime(),event:'gtm.js'}});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);}})(window,document,'script','dataLayer','GTM-NFGP7XQD');</script>
+<link rel="preconnect" href="https://d8j0ntlcm91z4.cloudfront.net" crossorigin>
+<link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet">
+<style>
+/* ---- Geist Sans (self-hosted) ---- */
+@font-face{{font-family:'Geist Sans';src:url('/assets/fonts/geist-sans-latin-400-normal.woff2') format('woff2');font-weight:400;font-display:swap}}
+@font-face{{font-family:'Geist Sans';src:url('/assets/fonts/geist-sans-latin-500-normal.woff2') format('woff2');font-weight:500;font-display:swap}}
+@font-face{{font-family:'Geist Sans';src:url('/assets/fonts/geist-sans-latin-600-normal.woff2') format('woff2');font-weight:600;font-display:swap}}
+
+/* ---- theme tokens (per spec) ---- */
+:root{{
+  --background:260 87% 3%;
+  --foreground:40 6% 95%;
+  --hero-sub:40 6% 82%;
+}}
+*{{margin:0;padding:0;box-sizing:border-box}}
+body{{
+  background:hsl(var(--background));
+  color:hsl(var(--foreground));
+  font-family:'Geist Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  -webkit-font-smoothing:antialiased;
+}}
+a{{color:inherit;text-decoration:none}}
+button{{font-family:inherit;cursor:pointer}}
+
+/* ---- liquid glass (verbatim from spec) ---- */
+.liquid-glass{{
+  background:rgba(255,255,255,0.01);
+  background-blend-mode:luminosity;
+  backdrop-filter:blur(4px);
+  border:none;
+  box-shadow:inset 0 1px 1px rgba(255,255,255,0.1);
+  position:relative;
+  overflow:hidden;
+}}
+.liquid-glass::before{{
+  content:"";position:absolute;inset:0;border-radius:inherit;padding:1.4px;
+  background:linear-gradient(180deg,rgba(255,255,255,0.45) 0%,rgba(255,255,255,0.15) 20%,rgba(255,255,255,0) 40%,rgba(255,255,255,0) 60%,rgba(255,255,255,0.15) 80%,rgba(255,255,255,0.45) 100%);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;
+}}
+
+/* ---- page wrapper: video behind everything ---- */
+.wrapper{{position:relative;overflow:hidden;min-height:100vh}}
+.bg-video{{position:absolute;top:0;left:0;width:100%;height:100vh;object-fit:cover;opacity:0}}
+.content{{position:relative;z-index:10}}
+
+/* ---- hero section: min-h-screen flex-col ---- */
+.hero-sec{{min-height:100vh;display:flex;flex-direction:column;overflow:visible;position:relative}}
+
+/* blurred overlay shape */
+.blur-shape{{
+  width:984px;height:527px;opacity:.9;background:#030712;filter:blur(82px);
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  pointer-events:none;
+}}
+
+/* ---- navbar ---- */
+nav{{width:100%;padding:20px 32px;display:flex;flex-direction:row;justify-content:space-between;align-items:center;position:relative;z-index:20}}
+nav .logo img{{height:32px;width:auto;display:block}}
+.nav-center{{display:flex;align-items:center;gap:8px}}
+.nav-center>div{{position:relative}}
+.nav-btn{{display:inline-flex;align-items:center;gap:6px;background:none;border:none;
+  color:hsl(var(--foreground) / .9);font-size:15px;font-weight:500;padding:10px 14px;border-radius:8px;
+  transition:color .25s,background .25s}}
+.nav-btn:hover{{color:hsl(var(--foreground));background:rgba(255,255,255,.05)}}
+.dd{{position:absolute;top:calc(100% + 8px);left:0;min-width:260px;border-radius:14px;padding:8px;
+  background:rgba(8,4,18,.92);backdrop-filter:blur(20px);
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.1),0 30px 60px rgba(0,0,0,.55);
+  opacity:0;visibility:hidden;transform:translateY(6px);transition:all .3s ease;z-index:30}}
+.nav-center div:hover>.dd,.nav-center div:focus-within>.dd{{opacity:1;visibility:visible;transform:translateY(0)}}
+.dd a{{display:block;padding:10px 14px;border-radius:8px;font-size:14px;color:hsl(var(--foreground) / .8)}}
+.dd a:hover{{background:rgba(255,255,255,.06);color:hsl(var(--foreground))}}
+.nav-right{{display:flex;align-items:center;gap:10px}}
+.btn-hero-secondary{{
+  border-radius:9999px;padding:8px 16px;font-size:14px;font-weight:500;
+  color:hsl(var(--foreground));border:none;display:inline-flex;align-items:center;
+  transition:transform .25s ease,box-shadow .25s ease}}
+.btn-hero-secondary:hover{{transform:translateY(-1px);box-shadow:inset 0 1px 1px rgba(255,255,255,.18),0 6px 24px rgba(0,0,0,.35)}}
+.divider{{height:1px;margin-top:3px;background:linear-gradient(to right,transparent,hsl(var(--foreground) / .2),transparent)}}
+
+/* ---- hero content ---- */
+.hero-mid{{flex:1;display:flex;align-items:center;justify-content:center;position:relative}}
+.hero-inner{{text-align:center;position:relative;z-index:10;padding:0 24px}}
+.headline{{
+  font-family:'General Sans','Geist Sans',sans-serif;
+  font-size:min(220px,14.5vw);
+  font-weight:400;line-height:1.02;letter-spacing:-0.024em;
+  color:hsl(var(--foreground));white-space:nowrap}}
+.headline .grad{{
+  background-image:linear-gradient(to left,#6366f1,#a855f7,#fcd34d);
+  -webkit-background-clip:text;background-clip:text;color:transparent}}
+.subtitle{{
+  color:hsl(var(--hero-sub));font-size:18px;line-height:2rem;max-width:28rem;
+  margin:9px auto 0;opacity:.8}}
+.cta{{margin-top:25px;padding:24px 29px;font-size:16px;border-radius:9999px}}
+
+/* ---- logo marquee ---- */
+.mq-band{{padding-bottom:40px;position:relative;z-index:10}}
+.mq-wrap{{max-width:64rem;margin:0 auto;display:flex;align-items:center;gap:48px;padding:0 24px}}
+.mq-label{{color:hsl(var(--foreground) / .5);font-size:14px;line-height:1.5;flex:0 0 auto}}
+.mq-viewport{{overflow:hidden;flex:1;-webkit-mask-image:linear-gradient(to right,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(to right,transparent,#000 8%,#000 92%,transparent)}}
+.mq-track{{display:flex;gap:64px;width:max-content;animation:mq 20s linear infinite}}
+@keyframes mq{{from{{transform:translateX(0%)}}to{{transform:translateX(-50%)}}}}
+.mq-item{{display:flex;align-items:center;gap:12px;flex:0 0 auto}}
+.mq-ic{{width:24px;height:24px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:600;color:hsl(var(--foreground) / .9)}}
+.mq-name{{font-size:16px;font-weight:600;color:hsl(var(--foreground))}}
+
+
+
+
+/* ---- hero wordmark in the logo face (Conthrax) ----
+   The brand wordmark PNG is used as a mask with the hero gradient poured
+   through it — exact logo letterforms, no font license required.
+   Real text stays in the h1 for SEO / screen readers. */
+.headline-wm{{width:min(880px,84vw);aspect-ratio:5544/1775;margin:0 auto clamp(22px,3.4vh,40px);position:relative;
+  background-image:linear-gradient(to left,#6366f1,#a855f7,#fcd34d);
+  -webkit-mask:url('/assets/logo/fromfuture-wordmark-white.png') center/contain no-repeat;
+  mask:url('/assets/logo/fromfuture-wordmark-white.png') center/contain no-repeat}}
+.sr-only{{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip:rect(0,0,0,0);white-space:nowrap;border:0}}
+@supports not ((-webkit-mask:url('') center/contain no-repeat) or (mask:url('') center/contain no-repeat)){{
+  .headline-wm{{background:none;-webkit-mask:none;mask:none;aspect-ratio:auto}}
+  .headline-wm .sr-only{{position:static;width:auto;height:auto;margin:0;clip:auto;white-space:normal;
+    font-family:'General Sans','Geist Sans',sans-serif;font-size:min(220px,14.5vw);
+    font-weight:400;line-height:1.02;letter-spacing:-0.024em;color:hsl(var(--foreground))}}
+}}
+
+/* ---- audit pass: light tracing, odometer, ticker, polish ---- */
+@property --ta{{syntax:'<angle>';initial-value:0deg;inherits:false}}
+.trace{{position:relative}}
+.trace::after{{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.4px;
+  background:conic-gradient(from var(--ta),
+    transparent 0deg,transparent 286deg,
+    rgba(99,102,241,0) 296deg,rgba(99,102,241,.75) 318deg,
+    rgba(168,85,247,.9) 334deg,rgba(252,211,77,.85) 348deg,
+    rgba(255,255,255,.95) 354deg,transparent 360deg);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  pointer-events:none;opacity:.8;
+  animation:trace-spin 7s linear infinite;animation-delay:var(--td,0s)}}
+@keyframes trace-spin{{to{{--ta:360deg}}}}
+@media(prefers-reduced-motion:reduce){{.trace::after{{animation:none;opacity:0}}}}
+.tp-below{{position:relative}}
+.tp-below::before{{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:min(900px,90vw);height:220px;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 0%,rgba(168,85,247,.09),transparent 70%)}}
+.sec-label{{color:hsl(var(--foreground) / .55)}}
+.cmp-col{{display:flex;flex-direction:column}}
+.cmp-col .cmp-cell{{flex:1}}
+.svc .idx{{display:inline-flex;align-items:center;justify-content:center;
+  width:34px;height:34px;border-radius:10px;margin-bottom:22px;
+  color:hsl(var(--foreground) / .85);font-size:12.5px;
+  background:linear-gradient(135deg,rgba(99,102,241,.22),rgba(168,85,247,.22));
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.16)}}
+.odo{{display:inline-flex;overflow:hidden;height:1em;line-height:1;vertical-align:top}}
+/* background-clip:text breaks on transformed descendants — gradient goes per-digit */
+.ind-big.odo{{background:none;color:hsl(var(--foreground))}}
+.odo .reel:nth-child(1) .strip span{{background-image:linear-gradient(to left,#a855f7,#fcd34d);
+  -webkit-background-clip:text;background-clip:text;color:transparent}}
+.odo .reel:nth-child(2) .strip span{{background-image:linear-gradient(to left,#6366f1,#a855f7);
+  -webkit-background-clip:text;background-clip:text;color:transparent}}
+.odo .reel{{display:block;height:1em;overflow:hidden}}
+.odo .strip{{display:flex;flex-direction:column;
+  transition:transform 1.7s cubic-bezier(.16,1,.3,1)}}
+.odo .strip span{{display:block;height:1em;line-height:1}}
+.ind-ticker{{margin-top:38px;overflow:hidden;
+  -webkit-mask-image:linear-gradient(to right,transparent,#000 12%,#000 88%,transparent);
+  mask-image:linear-gradient(to right,transparent,#000 12%,#000 88%,transparent)}}
+.ind-ticker .tk{{display:flex;gap:36px;width:max-content;animation:mq 46s linear infinite}}
+.ind-ticker a{{font-size:14px;font-weight:500;color:hsl(var(--foreground) / .45);
+  white-space:nowrap;transition:color .25s}}
+.ind-ticker a:hover{{color:hsl(var(--foreground) / .9)}}
+
+/* ================= BELOW THE HERO (full homepage) ================= */
+.tp-below{{background:hsl(var(--background));position:relative;z-index:10}}
+section.blk{{padding:110px 32px;position:relative}}
+.blk-inner{{max-width:72rem;margin:0 auto}}
+.sec-divider{{height:1px;background:linear-gradient(to right,transparent,hsl(var(--foreground) / .14),transparent)}}
+.sec-label{{font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  color:hsl(var(--foreground) / .4);margin-bottom:14px}}
+.sec-h{{font-family:'General Sans','Geist Sans',sans-serif;font-weight:500;
+  font-size:clamp(34px,4.4vw,58px);line-height:1.06;letter-spacing:-0.024em;color:hsl(var(--foreground))}}
+.sec-h .grad{{background-image:linear-gradient(to left,#6366f1,#a855f7,#fcd34d);
+  -webkit-background-clip:text;background-clip:text;color:transparent}}
+.sec-sub{{color:hsl(var(--hero-sub));opacity:.7;font-size:16.5px;line-height:1.65;max-width:36rem;margin-top:14px}}
+
+.cmp{{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:48px}}
+.cmp-col{{border-radius:20px;padding:8px}}
+.cmp-hd{{font-family:'General Sans','Geist Sans',sans-serif;font-weight:600;font-size:15px;
+  padding:20px 24px 14px;letter-spacing:-0.01em}}
+.cmp-col.old .cmp-hd{{color:hsl(var(--foreground) / .45)}}
+.cmp-col.new .cmp-hd{{background-image:linear-gradient(to left,#6366f1,#a855f7,#fcd34d);
+  -webkit-background-clip:text;background-clip:text;color:transparent}}
+.cmp-cell{{display:flex;gap:14px;align-items:flex-start;padding:20px 24px;
+  border-top:1px solid hsl(var(--foreground) / .08)}}
+.cmp-cell .m{{flex:0 0 auto;width:22px;height:22px;border-radius:9999px;display:flex;
+  align-items:center;justify-content:center;font-size:12px;margin-top:2px}}
+.cmp-col.old .m{{border:1px solid hsl(var(--foreground) / .22);color:hsl(var(--foreground) / .35)}}
+.cmp-col.new .m{{background:linear-gradient(135deg,#6366f1,#a855f7);color:#fff}}
+.cmp-cell b{{display:block;font-weight:600;font-size:16px;margin-bottom:5px;color:hsl(var(--foreground))}}
+.cmp-col.old .cmp-cell b{{color:hsl(var(--foreground) / .55)}}
+.cmp-cell p{{font-size:14.5px;line-height:1.6;color:hsl(var(--hero-sub));opacity:.75}}
+.cmp-col.old .cmp-cell p{{opacity:.5}}
+
+.svc-grid{{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:48px}}
+.svc{{border-radius:20px;padding:30px 28px;display:flex;flex-direction:column;min-height:230px;
+  transition:transform .3s ease;position:relative}}
+.svc:hover{{transform:translateY(-3px)}}
+.svc .idx{{font-size:12px;font-weight:600;color:hsl(var(--foreground) / .35);margin-bottom:26px;letter-spacing:.06em}}
+.svc h3{{font-family:'General Sans','Geist Sans',sans-serif;font-weight:600;font-size:19px;
+  letter-spacing:-0.015em;margin-bottom:10px;color:hsl(var(--foreground))}}
+.svc p{{font-size:14.5px;line-height:1.6;color:hsl(var(--hero-sub));opacity:.7;margin-bottom:18px}}
+.svc .more{{margin-top:auto;font-size:13.5px;font-weight:500;
+  background-image:linear-gradient(to left,#6366f1,#a855f7,#fcd34d);
+  -webkit-background-clip:text;background-clip:text;color:transparent}}
+.svc .pop{{position:absolute;top:20px;right:20px;font-size:11px;font-weight:600;
+  border-radius:9999px;padding:5px 12px;color:hsl(var(--foreground) / .85)}}
+
+.ind-blk{{text-align:center}}
+.ind-big{{font-family:'General Sans','Geist Sans',sans-serif;font-weight:500;
+  font-size:clamp(110px,16vw,230px);line-height:.95;letter-spacing:-0.03em;
+  background-image:linear-gradient(to left,#6366f1,#a855f7,#fcd34d);
+  -webkit-background-clip:text;background-clip:text;color:transparent}}
+.ind-lbl{{font-size:19px;font-weight:500;color:hsl(var(--foreground));margin-top:6px}}
+
+.close-panel{{border-radius:28px;padding:80px 40px;text-align:center;position:relative;overflow:visible}}
+.close-panel .blur-shape{{width:700px;height:380px}}
+.close-panel .sec-sub{{margin-left:auto;margin-right:auto}}
+.close-act{{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:30px;position:relative;z-index:2}}
+
+footer.tp{{padding:70px 32px 40px}}
+.ft-grid{{max-width:72rem;margin:0 auto;display:grid;grid-template-columns:1.5fr 1fr 1fr 1.5fr;gap:40px}}
+.ft-brand img{{height:28px;margin-bottom:18px}}
+.ft-brand p{{font-size:14px;line-height:1.65;color:hsl(var(--hero-sub));opacity:.6;max-width:20rem}}
+.ft-contact{{margin-top:14px;font-size:13.5px;color:hsl(var(--foreground) / .5)}}
+.ft-contact a{{color:hsl(var(--foreground) / .8)}}
+footer.tp h4{{font-size:13px;font-weight:600;color:hsl(var(--foreground));margin-bottom:16px}}
+.ft-links{{list-style:none}}
+.ft-links li{{margin-bottom:10px}}
+.ft-links a{{font-size:14px;color:hsl(var(--foreground) / .55);transition:color .25s}}
+.ft-links a:hover{{color:hsl(var(--foreground))}}
+.nl{{display:flex;margin-bottom:12px}}
+.nl input{{flex:1;background:hsl(var(--foreground) / .04);border:1px solid hsl(var(--foreground) / .12);
+  border-right:none;border-radius:9999px 0 0 9999px;padding:11px 18px;color:hsl(var(--foreground));
+  font-size:14px;font-family:inherit;outline:none;min-width:0}}
+.nl button{{border:none;border-radius:0 9999px 9999px 0;padding:0 20px;font-size:13px;font-weight:600;
+  color:hsl(var(--foreground))}}
+.agency{{display:flex;gap:8px;align-items:center;font-size:12.5px;color:hsl(var(--foreground) / .4)}}
+.ft-bottom{{max-width:72rem;margin:52px auto 0;padding-top:26px;
+  border-top:1px solid hsl(var(--foreground) / .1);display:flex;justify-content:space-between;
+  gap:16px;flex-wrap:wrap;font-size:13px;color:hsl(var(--foreground) / .4)}}
+.ft-bottom a{{color:hsl(var(--foreground) / .6)}}
+
+@media(max-width:960px){{
+  .cmp{{grid-template-columns:1fr}}
+  .svc-grid{{grid-template-columns:1fr 1fr}}
+  .ft-grid{{grid-template-columns:1fr 1fr}}
+}}
+@media(max-width:640px){{
+  .svc-grid{{grid-template-columns:1fr}}
+  .ft-grid{{grid-template-columns:1fr}}
+  section.blk{{padding:80px 20px}}
+}}
+
+@media(max-width:900px){{
+  .nav-center{{display:none}}
+  .headline{{white-space:normal;font-size:clamp(56px,16vw,120px)}}
+  .blur-shape{{width:120vw;height:60vh}}
+  .mq-wrap{{flex-direction:column;gap:24px;text-align:center}}
+}}
+</style>
+</head>
+<body>
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NFGP7XQD" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<div class="wrapper">
+  <video class="bg-video" id="bgv" muted playsinline preload="auto" src="{VIDEO}"></video>
+
+  <div class="content">
+    <section class="hero-sec">
+      <div class="blur-shape"></div>
+
+      <nav>
+        <a class="logo" href="/"><img src="/assets/logo/fromfuture-lockup-white.png" alt="From Future"></a>
+        <div class="nav-center">
+          <div><a class="nav-btn" href="/services">Services {CHEV}</a>
+            <div class="dd">
+              <a href="/services/tap-to-talk">Tap-to-Talk AI</a>
+              <a href="/services/online-reputation-management">Online Reputation Management</a>
+              <a href="/services/page-speak">PageSpeak</a>
+              <a href="/services/ai-seo">AI SEO</a>
+              <a href="/services/phone-ai">Phone AI Assistant</a>
+              <a href="/services/process-automation">Process Automation</a>
+              <a href="/services/chatbot">AI Chatbot</a>
+            </div></div>
+          <div><a class="nav-btn" href="/resources">Resources {CHEV}</a>
+            <div class="dd">
+              <a href="https://network-6160969.mn.co" target="_blank" rel="noopener">Free AI Training</a>
+              <a href="/blog">Blog</a>
+              <a href="/resources/free-ai-resources">Free AI Resources</a>
+            </div></div>
+          <div><a class="nav-btn" href="/pricing">Pricing</a></div>
+          <div><a class="nav-btn" href="/blog/becoming-AI">My AI Clone Story</a></div>
+        </div>
+        <div class="nav-right">
+          <a class="btn-hero-secondary liquid-glass" href="https://portal.fromfuture.io">Client Portal</a>
+          <a class="btn-hero-secondary liquid-glass" href="/connect">Get Started Now</a>
+        </div>
+      </nav>
+      <div class="divider"></div>
+
+      <div class="hero-mid">
+        <div class="hero-inner">
+          <h1 class="headline-wm" role="img" aria-label="From Future"><span class="sr-only">From Future</span></h1>
+          <p class="subtitle">Stop being the bottleneck in your own business. We capture your exact voice, tone, and business rules into a custom AI engine that answers your phones, replies to DMs, handles emails, and books appointments on autopilot.</p>
+          <span style="display:inline-flex;gap:12px;flex-wrap:wrap;justify-content:center"><a class="btn-hero-secondary liquid-glass cta" href="/connect">Book a Systems Audit</a>
+          <a class="btn-hero-secondary liquid-glass cta" href="/services/tap-to-talk">Listen to Live Demo &rarr;</a></span>
+        </div>
+      </div>
+
+      <div class="mq-band">
+        <div class="mq-wrap">
+          <div class="mq-label">Relied on by businesses<br>across the globe</div>
+          <div class="mq-viewport">
+            <div class="mq-track">{items}{items}</div>
+          </div>
+        </div>
+      </div>
+    </section>
+{below}
+  </div>
+</div>
+
+<script>
+/* Custom fade loop per spec: 0.5s fade-in at start, 0.5s fade-out at end,
+   requestAnimationFrame-driven. On ended: opacity to 0, wait 100ms, replay. */
+(function () {{
+  var v = document.getElementById('bgv');
+  var FADE = 0.5, raf = null;
+
+  function tick() {{
+    if (!v.duration) {{ raf = requestAnimationFrame(tick); return; }}
+    var t = v.currentTime, d = v.duration;
+    var o = Math.min(t / FADE, (d - t) / FADE, 1);
+    v.style.opacity = Math.max(0, Math.min(1, o)).toFixed(3);
+    raf = requestAnimationFrame(tick);
+  }}
+
+  v.addEventListener('play', function () {{
+    if (raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(tick);
+  }});
+
+  v.addEventListener('ended', function () {{
+    if (raf) cancelAnimationFrame(raf);
+    v.style.opacity = 0;
+    setTimeout(function () {{
+      v.currentTime = 0;
+      v.play().catch(function () {{}});
+    }}, 100);
+  }});
+
+  v.play().catch(function () {{
+    /* autoplay blocked: retry on first interaction */
+    var kick = function () {{ v.play().catch(function () {{}}); document.removeEventListener('click', kick); }};
+    document.addEventListener('click', kick);
+  }});
+}})();
+
+/* 46 odometer: rolls up, holds, restarts every 6.5s */
+(function () {{
+  var odo = document.getElementById('odo46');
+  if (!odo) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {{
+    odo.outerHTML = '<div class="ind-big">46</div>'; return;
+  }}
+  var strips = odo.querySelectorAll('.strip');
+  Array.prototype.forEach.call(strips, function (st, i) {{
+    var fin = parseInt(st.getAttribute('data-final'), 10);
+    var spins = i === 0 ? 1 : 2;
+    var rows = [];
+    for (var k = 0; k < spins; k++) for (var d = 0; d <= 9; d++) rows.push(d);
+    for (var d2 = 0; d2 <= fin; d2++) rows.push(d2);
+    var html = '';
+    for (var r = 0; r < rows.length; r++) html += '<span>' + rows[r] + '</span>';
+    st.innerHTML = html;
+    st.__target = -(rows.length - 1);
+  }});
+  function roll() {{
+    Array.prototype.forEach.call(strips, function (st) {{
+      st.style.transition = 'none';
+      st.style.transform = 'translateY(0)';
+    }});
+    void odo.offsetHeight;
+    requestAnimationFrame(function () {{
+      Array.prototype.forEach.call(strips, function (st, i) {{
+        st.style.transition = 'transform ' + (1.5 + i * 0.35) + 's cubic-bezier(.16,1,.3,1)';
+        st.style.transform = 'translateY(' + st.__target + 'em)';
+      }});
+    }});
+  }}
+  var started = false;
+  function start() {{ if (started) return; started = true; roll(); setInterval(roll, 6500); }}
+  var io = new IntersectionObserver(function (en) {{
+    if (en[0].isIntersecting) {{ start(); io.disconnect(); }}
+  }}, {{ threshold: .4 }});
+  io.observe(odo);
+}})();
+</script>
+</body></html>"""
+    write_page("", html)
+    write_page("theme-preview",
+        '<!DOCTYPE html><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=/"><link rel="canonical" href="https://www.fromfuture.io/">')
